@@ -109,7 +109,14 @@ public class FrontEnd {
 		}
 	}
 	private void moveLogOut() {
-
+		System.out.println("1. 로그아웃 확인	2. 취소");
+		String select = getInput();
+		if (select.equals("1")) {
+			userInfo = null;
+			System.out.println("로그아웃되었습니다.");
+			System.out.println("1. 확인");
+			getInput();
+		}
 	}
 	private void moveSignUp() {
 		System.out.println(pu.getTitle("회원가입", true));
@@ -318,7 +325,16 @@ public class FrontEnd {
 		}
 	}
 	void showPostDetail(List<PostBean> posts, String idx, String[] options3, String[] options4) {
-		PostBean po = posts.get(Integer.parseInt(idx) - 4);
+		PostBean po = null;
+		try {
+			po = posts.get(Integer.parseInt(idx) - 4);
+		} catch (Exception e) {
+			System.out.println("오류");
+			System.out.println("1. 확인");
+			getInput();
+			return;
+		}
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append("==================================\n");
 		sb.append(po.getTitle() + "\n");
@@ -339,11 +355,15 @@ public class FrontEnd {
 			switch (select) {
 			case "1":
 				if (userInfo != null) {
-					deletePost(po.getIndex());
-					break;
-				} else {
-					run = false;					
-				}
+					if (!userInfo.equals(po.getUser())) {
+						System.out.println("권한이 없습니다.");
+						System.out.println("1. 확인");
+						getInput();
+					} else {
+						deletePost(po.getIndex());
+					}	
+				} 		
+					run = false;						
 				break;
 			case "2":
 				if (userInfo != null) run = false;
@@ -365,6 +385,8 @@ public class FrontEnd {
 			serverData = getResponse();
 		}
 		System.out.println(serverData != null ? "게시글이 삭제되었습니다." : "오류");
+		System.out.println("1. 확인");
+		getInput();
 	}
 	String getPosts() {
 		String serverData = null;

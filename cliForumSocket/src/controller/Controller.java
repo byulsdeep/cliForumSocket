@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
 import backend.Authentication;
 import backend.Forum;
@@ -19,12 +20,12 @@ public class Controller implements Runnable {
 	String message;
 	ProjectUtils pu;
 	DataOutputStream responseSender;
-
+	
 	public Controller(Socket socket) {
 		this.socket = socket;
 		this.pu = new ProjectUtils();
 	}
-
+	@Override
 	public void run() {
 		try {
 			requestReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
