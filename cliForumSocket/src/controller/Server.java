@@ -1,11 +1,8 @@
 package controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.List;
 
 public class Server {
 	ServerSocket serverSocket;
@@ -17,7 +14,7 @@ public class Server {
 	}
 	public void runServer() {
 		try {
-			serverSocket = new ServerSocket(2400);
+			serverSocket = new ServerSocket(9999);
 			//writers = new LinkedList<>();
 			
 			System.out.println("Waiting for clients to connect...");
@@ -31,16 +28,5 @@ public class Server {
 		} catch (IOException e) {
 			System.out.println("Error: " + e.getMessage());
 		}
-	}
-}
-class Handler implements Runnable {
-	Socket s;
-	Handler(Socket s) {
-		this.s = s;
-	}
-	
-	@Override
-	public void run() {
-		
 	}
 }

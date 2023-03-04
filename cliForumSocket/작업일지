@@ -98,6 +98,7 @@ ViewRules -> PageRules, ModelRules -> ServiceRules로 이름변경
 
 2023-03-04 7일차
 공부를 하면서 드디어 프로세스가 머리속에 만들어짐.
+
 기존 패턴: 
 	뷰-컨트롤러-모델-DB - 스레드 1개
 새 패턴   : 
@@ -107,15 +108,35 @@ ViewRules -> PageRules, ModelRules -> ServiceRules로 이름변경
 
  	뷰-소켓-컨트롤러-모델-DB x n개 스레드 생성
 
+로그아웃 기능도 적당히 구현 (통신x)
+
 배운점:
 	"\n"을 포함해서 전송하려면 PrintWriter는 안되고 DataOutputStream.writeUTF를 쓰면된다.
 	스캐너의 nextInt 대신 nextLine을 쓰면 try catch를 줄일수 있다.
 	스캐너 외에 InputStreamReader도 System.in을 파라미터로 넣으면 키보드 입력을 받을 수 있다.
 할일:
 	여러 클라이언트 연결중, 새로운 글이 올라오면 모든 클라이언트에게 그 메시지를 전송하는 로직을 만들 수 있을까?
+	유사 ajax.
 	FrontEnd 클래스 과부하. 가능하면 다른 클래스로 분산.
 	DAO 함수 데이터 타입 정리.
 	AuthBean 사용할만한 곳 찾아서 활용.
-	 
+
+2023-03-04 7일차-2
+
+유사 ajax는 포기. 
+DAO 함수 나쁘지 않은듯. 
+CommentBean 클래스 추가.
+PostBean 안에 List<CommentBean>으로 들어감.
+댓글 기능 추가
+글 삭제하면 해당 글 댓글도 같이 삭제하게 업데이트
+
+슬슬 여기서 마무리하기.
+
+마지막 정리:
+동시에 같은 값으로 요청시 예외처리
+ex: 같은 아이디로 회원가입, 같은 글 번호로 게시글 등록
+프로그램 끊기지 않도록 모든 예외 처리 - try catch 
+디자인 업데이트
+
   
 	

@@ -9,18 +9,19 @@ import java.net.Socket;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import beans.CommentBean;
 import beans.PostBean;
-import controller.Controller;
 import utilities.ProjectUtils;
 
 public class FrontEnd {
 	Socket socket;
 	BufferedReader inputReader;
 	PrintWriter requestSender;
-	//BufferedReader responseReader;
+	// BufferedReader responseReader;
 	DataInputStream responseReader;
 	ProjectUtils pu;
 	String userInfo = null;
@@ -33,12 +34,13 @@ public class FrontEnd {
 	}
 	public void connectToServer() {
 		try {
-			socket = new Socket("localhost", 2400);
+			socket = new Socket("localhost", 9999);
 			System.out.println("Connected to Server.");
 
 			inputReader = new BufferedReader(new InputStreamReader(System.in));
 			requestSender = new PrintWriter(socket.getOutputStream(), true);
-			//responseReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			// responseReader = new BufferedReader(new
+			// InputStreamReader(socket.getInputStream()));
 			responseReader = new DataInputStream(socket.getInputStream());
 
 		} catch (IOException e) {
@@ -84,6 +86,7 @@ public class FrontEnd {
 				}
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Error: " + e.getMessage());
 		}
 	}
@@ -93,7 +96,7 @@ public class FrontEnd {
 		String select;
 		boolean run = true;
 		while (run) {
-			System.out.println("내 아이디: " + userInfo);
+			System.out.println("내 아이디: " + ((userInfo != null) ? userInfo : "로그인 후 이용해주세요."));
 			System.out.println("==================================");
 			System.out.println(pu.getMenu(options, true));
 			select = getInput();
@@ -284,16 +287,17 @@ public class FrontEnd {
 		// new Controller().entrance("moveForum?id=" + userInfo, pu, sc);
 		String[] options = { "글쓰기  ", "마이페이지  ", "홈페이지 " };
 		String[] options2 = { "홈페이지 " };
-		String[] options3 = { "글삭제    ", "돌아가기 " };
+		String[] options3 = { "댓글달기 ", "글삭제    ", "돌아가기 " };
 		String[] options4 = { "돌아가기 " };
 		boolean showAccess = true;
-		
+
 		System.out.println(pu.getTitle("게시판", false));
 		String select;
 		boolean run = true;
 		
 		while (run) {
-			System.out.println(getPosts());
+			getPosts();
+			System.out.println(getList());
 			if (userInfo != null) {
 				System.out.println(pu.getMenu(options, true));
 			} else {
@@ -320,40 +324,73 @@ public class FrontEnd {
 				System.exit(0);
 				break;
 			default:
-				showPostDetail(posts, select, options3, options4);
+				try {
+					int i = Integer.parseInt(select);
+					//if (i > posts.size())
+					showPostDetail(select, options3, options4);
+				} catch (Exception e) {
+					break;
+				}
 			}
 		}
 	}
-	void showPostDetail(List<PostBean> posts, String idx, String[] options3, String[] options4) {
-		PostBean po = null;
-		try {
-			po = posts.get(Integer.parseInt(idx) - 4);
-		} catch (Exception e) {
-			System.out.println("오류");
-			System.out.println("1. 확인");
-			getInput();
-			return;
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("==================================\n");
-		sb.append(po.getTitle() + "\n");
-		sb.append(po.getUser() + " | " + po.getDate() + " " + po.getTime() + "\n");
-		sb.append("----------------------------------\n");
-		sb.append(po.getContent());
-		sb.append("==================================");
-		System.out.println(sb.toString());	
-		String select;
+	void showPostDetail(String idx, String[] options3, String[] options4) {
 		boolean run = true;
 		while (run) {
+			getPosts();
+			PostBean po = null;
+			try {
+				for (PostBean p : posts) {
+					if (p.getIndex() == Integer.parseInt(idx)) {
+						po = p;
+						break;
+					}
+				}
+				
+				
+				
+				
+			} catch (Exception e) {
+				System.out.println("오류");
+				System.out.println("1. 확인");
+				getInput();
+				return;
+			}
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("==================================\n");
+			sb.append(po.getTitle() + "\n");
+			sb.append(po.getUser() + " | " + po.getDate() + " " + po.getTime() + "\n");
+			sb.append("----------------------------------\n");
+			sb.append(po.getContent());
+			sb.append("==================================\n");
+			for (CommentBean c : po.getComments()) {
+				sb.append(c.getCommentIdx() + " | ");
+				sb.append(c.getUser() + " : ");
+				sb.append(c.getContent() + "\n                            ");
+				sb.append((pu.getDate().equals(c.getDate()) ? c.getTime() : c.getDate().substring(5, 10)) + "\n");
+				sb.append(
+						po.getComments().get(po.getComments().size() - 1) != c ? "----------------------------------\n"
+								: "==================================");
+			}
+			System.out.println(sb.toString());
+			String select;
+
 			sb.setLength(0);
 			sb.append(pu.getMenu((userInfo != null) ? options3 : options4, true));
 			sb.append("\n==================================");
 			System.out.println(sb);
 			select = getInput();
-
+			// String[] options3 = { "댓글달기 ", "글삭제 ", "돌아가기 " };
 			switch (select) {
 			case "1":
+				if (userInfo != null) {
+					addComment(po.getIndex());
+				} else {
+					run = false;
+				}	
+				break;
+			case "2":
 				if (userInfo != null) {
 					if (!userInfo.equals(po.getUser())) {
 						System.out.println("권한이 없습니다.");
@@ -361,17 +398,49 @@ public class FrontEnd {
 						getInput();
 					} else {
 						deletePost(po.getIndex());
-					}	
-				} 		
-					run = false;						
-				break;
-			case "2":
-				if (userInfo != null) run = false;
+					}
+				}
+			case "3":
+				if (userInfo != null)
+					run = false;
 				break;
 			case "0":
 				System.out.println("종료");
 				System.exit(0);
 				break;
+			}
+		}
+	}
+	void addComment(int idx) {
+		String clientData = null;
+		String serverData = null;
+		String[] names = { "postIdx", "commentIdx", "user", "content", "date", "time" };
+		String[] data = new String[6];
+
+		data[0] = String.valueOf(idx);
+
+		sendRequest("getNextCommentIdx?postIdx=" + idx);
+		serverData = getResponse();
+		data[1] = serverData;
+
+		data[2] = userInfo;
+
+		System.out.print("댓글: ");
+		data[3] = getInput();
+
+		pu.confirm();
+		boolean isExit = false;
+		if (!(isExit = pu.confirmInput(isExit, inputReader))) {
+			data[4] = pu.getDate();
+			data[5] = pu.getTime();
+
+			clientData = pu.makeTransferData("addComment", names, data);
+			sendRequest(clientData);
+			serverData = getResponse();
+			if (serverData.equals("true")) {
+				System.out.println("댓글이 추가되었습니다.");
+			} else {
+				System.out.println("오류");
 			}
 		}
 	}
@@ -388,16 +457,20 @@ public class FrontEnd {
 		System.out.println("1. 확인");
 		getInput();
 	}
-	String getPosts() {
-		String serverData = null;
+	void getPosts() {
+		String serverDataPosts = null;
+		String serverDataComments = null;
 		sendRequest("getPosts");
-		serverData = getResponse();
+		serverDataPosts = getResponse();
 
 		StringTokenizer st;
+		StringTokenizer st2;
 		posts = new ArrayList<>();
 		PostBean p;
+		CommentBean c;
+		List<CommentBean> comments;
 		String content;
-		st = new StringTokenizer(serverData, "|\n");
+		st = new StringTokenizer(serverDataPosts, "|\n");
 		while (st.hasMoreTokens()) {
 			p = new PostBean();
 			p.setIndex(Integer.parseInt(st.nextToken()));
@@ -407,20 +480,40 @@ public class FrontEnd {
 			p.setContent(content.replace("<newLine>", "\n"));
 			p.setDate(st.nextToken());
 			p.setTime(st.nextToken());
+
+			comments = new LinkedList<>();
+			sendRequest("getComments?postIdx=" + p.getIndex());
+			serverDataComments = getResponse();
+			st2 = new StringTokenizer(serverDataComments, "|\n");
+
+			while (st2.hasMoreTokens()) {
+				c = new CommentBean();
+				c.setPostIdx(Integer.parseInt(st2.nextToken()));
+				c.setCommentIdx(Integer.parseInt(st2.nextToken()));
+				c.setUser(st2.nextToken());
+				c.setContent(st2.nextToken());
+				c.setDate(st2.nextToken());
+				c.setTime(st2.nextToken());
+				comments.add(c);
+			}
+			p.setComments(comments);
 			posts.add(p);
 		}
-
+	}
+	String getList() {
 		StringBuffer sb = new StringBuffer();
-		//0. 1. 번은 홈페이지, 종료 기능이므로 2번 부터 게시글 선택
-		//2. 아름다운 구속		                    		댓글수
-		//틀니 | 13:15/2023.03.02 | 조회 99 | 추천 99
-		for (int i = 0; i < posts.size(); i++) {   
-			sb.append(i + 4 + ". ");
+		// 0. 1. 번은 홈페이지, 종료 기능이므로 2번 부터 게시글 선택
+		// 2. 아름다운 구속 댓글수
+		// 틀니 | 13:15/2023.03.02 | 조회 99 | 추천 99
+		for (int i = 0; i < posts.size(); i++) {
+			sb.append(posts.get(i).getIndex() + ". ");
 			sb.append(posts.get(i).getTitle() + "\n");
 			sb.append(posts.get(i).getUser() + "\t");
-			sb.append((pu.getDate().equals(posts.get(i).getDate()) ? posts.get(i).getTime() : posts.get(i).getDate().substring(5,10)));
-			//sb.append("조회 "); 조회수, 추천수, 댓글수는 여유되면 추가
-			sb.append((i < posts.size() - 1) ? "\n----------------------------------\n" : "\n==================================");
+			sb.append((pu.getDate().equals(posts.get(i).getDate()) ? posts.get(i).getTime()
+					: posts.get(i).getDate().substring(5, 10)));
+			// sb.append("조회 "); 조회수, 추천수, 댓글수는 여유되면 추가
+			sb.append((i < posts.size() - 1) ? "\n----------------------------------\n"
+					: "\n==================================");
 		}
 		return sb.toString();
 	}
@@ -432,18 +525,17 @@ public class FrontEnd {
 		String[] data = new String[6];
 
 		// 최신글 번호 불러오는 코드 추가
-		Controller ctl;
-		sendRequest("getMaxPostIdx");
+		sendRequest("getNextPostIdx");
 		serverData = getResponse();
 		data[0] = serverData;
-		
+
 		data[1] = userInfo;
 		data[2] = "";
 		System.out.print("제목 : ");
 		data[2] = getInput();
 		System.out.println("내용 (1. 입력 종료): ");
 		data[3] = pu.nextPara(inputReader);
-		
+
 		pu.confirm();
 		boolean isExit = false;
 
@@ -464,18 +556,21 @@ public class FrontEnd {
 		try {
 			return inputReader.readLine();
 		} catch (Exception e) {
+			System.out.println("getInput");
+			System.out.println(e.getMessage());
 			return e.getMessage();
 		}
 	}
 	void sendRequest(String clientData) {
 		requestSender.println(clientData);
-		//print won't work, flush doesn't help
+		// print won't work, flush doesn't help
 	}
 	String getResponse() {
 		try {
-			//return responseReader.readLine();
+			// return responseReader.readLine();
 			return responseReader.readUTF();
 		} catch (Exception e) {
+			System.out.println(e.getMessage());
 			return e.getMessage();
 		}
 	}

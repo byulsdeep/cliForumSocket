@@ -40,6 +40,7 @@ public class Controller implements Runnable {
 			String clientData = getRequest();
 			System.out.println("Received client data from " + socket.getInetAddress());
 			System.out.println(clientData);
+			if (clientData.contains("Connection reset")) break;
 
 			jobCode = pu.getJobCode(clientData);
 			switch (jobCode) {
@@ -50,8 +51,11 @@ public class Controller implements Runnable {
 				break;
 			case "getPosts":
 			case "addPost":
-			case "getMaxPostIdx":
+			case "getNextPostIdx":
 			case "deletePost":
+			case "getComments":
+			case "getNextCommentIdx":
+			case "addComment":
 				message = new Forum().backController(clientData, pu);
 				break;
 			}

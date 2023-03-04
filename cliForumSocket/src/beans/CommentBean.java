@@ -1,33 +1,29 @@
 package beans;
 
-import java.util.List;
-
-public class PostBean {
-	private int index;
+public class CommentBean {
+	private int postIdx;
+	private int commentIdx;
 	private String user;
-	private String title;
 	private String content;
 	private String date;
 	private String time;
-	private List<CommentBean> comments;
-	
-	public int getIndex() {
-		return index;
+	public int getPostIdx() {
+		return postIdx;
 	}
-	public void setIndex(int index) {
-		this.index = index;
+	public void setPostIdx(int postIdx) {
+		this.postIdx = postIdx;
+	}
+	public int getCommentIdx() {
+		return commentIdx;
+	}
+	public void setCommentIdx(int commentIdx) {
+		this.commentIdx = commentIdx;
 	}
 	public String getUser() {
 		return user;
 	}
 	public void setUser(String user) {
 		this.user = user;
-	}
-	public String getTitle() {
-		return title;
-	}
-	public void setTitle(String title) {
-		this.title = title;
 	}
 	public String getContent() {
 		return content;
@@ -47,10 +43,5 @@ public class PostBean {
 	public void setTime(String time) {
 		this.time = time;
 	}
-	public List<CommentBean> getComments() {
-		return comments;
-	}
-	public void setComments(List<CommentBean> comments) {
-		this.comments = comments;
-	}
+	
 }
