@@ -34,10 +34,12 @@ public class FrontEnd {
 	}
 	public void connectToServer() {
 		try {
-			socket = new Socket("localhost", 9999);
+			inputReader = new BufferedReader(new InputStreamReader(System.in));
+			System.out.println("서버 주소 입력 (192.168.0.122): "); 
+			socket = new Socket(inputReader.readLine(), 9999);
 			System.out.println("Connected to Server.");
 
-			inputReader = new BufferedReader(new InputStreamReader(System.in));
+			
 			requestSender = new PrintWriter(socket.getOutputStream(), true);
 			// responseReader = new BufferedReader(new
 			// InputStreamReader(socket.getInputStream()));
