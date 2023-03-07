@@ -5,28 +5,22 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server {
-	ServerSocket serverSocket;
-	Socket socket;
-	//static List<PrintWriter> writers;
-	
 	public Server() {
-		runServer();
+		this.runServer();
 	}
 	public void runServer() {
 		try {
-			serverSocket = new ServerSocket(9999);
-			//writers = new LinkedList<>();
-			
+			ServerSocket serverSocket = new ServerSocket(2400);			
 			System.out.println("Waiting for clients to connect...");
-
 			while (true) {
-				socket = serverSocket.accept();
-				System.out.println("Client connected: " + socket.getInetAddress());
-				//writers.add(new PrintWriter(socket.getOutputStream(), true));
+				Socket socket = serverSocket.accept();
+				String clientIP = String.valueOf(socket.getInetAddress());
+				clientIP = clientIP.substring(1, clientIP.length());
+				System.out.println("Client connected: " + clientIP);
 				new Thread(new Controller(socket)).start();
 			}
 		} catch (IOException e) {
-			System.out.println("Error: " + e.getMessage());
+			System.out.println("Error starting server.");
 		}
 	}
 }

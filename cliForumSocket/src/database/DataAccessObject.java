@@ -20,12 +20,12 @@ public class DataAccessObject {
 	BufferedWriter bWriter;
 
 	public String getIdList() {
-		StringBuffer sb = new StringBuffer();
+		StringBuffer sb = new StringBuffer("");
 		String record = null;
 		try {
 			// admin,admin,19940602,1,양화초등학교 ->
 			// admin,id2,id3,id4.....
-			for (int i = 0; (record = bReader.readLine()) != null; i++) {
+			for (int i = 0; (record = this.bReader.readLine()) != null; i++) {
 				sb.append((i > 0) ? "," : "");
 				sb.append(record.substring(0, record.indexOf(",")));
 			}
@@ -36,9 +36,9 @@ public class DataAccessObject {
 	public String getUserInfo(String[][] exData) {
 		String record = null;
 		String[] exRecord;
-		String userInfo = null;
+		String userInfo = "false";
 		try {
-			while ((record = bReader.readLine()) != null) {
+			while ((record = this.bReader.readLine()) != null) {
 				exRecord = record.split(",");
 				if (exData[0][1].equals(exRecord[0]) && exData[1][1].equals(exRecord[1])) {
 					userInfo = exData[0][1];
@@ -46,48 +46,44 @@ public class DataAccessObject {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return userInfo;
 	}
 	public String getPosts(ProjectUtils pu) {
 		String record = null;
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder("");
 		try {
-			while ((record = bReader.readLine()) != null) {
+			while ((record = this.bReader.readLine()) != null) {
 				sb.append(record);
 				sb.append("\n");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return sb.toString();
 	}
 	public String getComments() { // get all comments
 		String record = null;
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder("");
 		try {
-			while ((record = bReader.readLine()) != null) {
+			while ((record = this.bReader.readLine()) != null) {
 				sb.append(record);
 				sb.append("\n");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return sb.toString();
 	}
 	public String getComments(String postIdx) { // get comments based on post idx
 		String record = null;
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder("");
 		try {
-			while ((record = bReader.readLine()) != null) {
+			while ((record = this.bReader.readLine()) != null) {
 				if (postIdx.equals(record.substring(0, record.indexOf("|")))) {
 					sb.append(record);
 					sb.append("\n");
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return sb.toString();
 	}
@@ -95,11 +91,10 @@ public class DataAccessObject {
 		String record = null;
 		List<Integer> idxs = new ArrayList<>();
 		try {
-			while ((record = bReader.readLine()) != null) {
+			while ((record = this.bReader.readLine()) != null) {
 				idxs.add(Integer.parseInt(record.substring(0, record.indexOf("|"))));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return idxs.size() < 1 ? 1 : Collections.max(idxs) + 1;
 	}
@@ -108,7 +103,7 @@ public class DataAccessObject {
 		List<Integer> idxs = new ArrayList<>();
 		StringTokenizer st = null;
 		try {
-			while ((record = bReader.readLine()) != null) {
+			while ((record = this.bReader.readLine()) != null) {
 				try {
 					st = new StringTokenizer(record, "|");
 					if (st.nextToken().equals(postIdx)) {
@@ -119,15 +114,14 @@ public class DataAccessObject {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 		return idxs.size() < 1 ? 1 : Collections.max(idxs) + 1;
 	}
 	public boolean insPost(String data) {
 		boolean isWrite = false;
 		try {
-			bWriter.write(data);
-			bWriter.newLine();
+			this.bWriter.write(data);
+			this.bWriter.newLine();
 			isWrite = true;
 		} catch (Exception e) {
 		}
@@ -141,8 +135,8 @@ public class DataAccessObject {
 			sb.append((i < exData.length - 1) ? "|" : "");
 		}
 		try {
-			bWriter.write(sb.toString());
-			bWriter.newLine();
+			this.bWriter.write(sb.toString());
+			this.bWriter.newLine();
 			isWrite = true;
 		} catch (Exception e) {
 		}
@@ -156,8 +150,8 @@ public class DataAccessObject {
 			sb.append((i < exData.length - 1) ? "|" : "");
 		}
 		try {
-			bWriter.write(sb.toString());
-			bWriter.newLine();
+			this.bWriter.write(sb.toString());
+			this.bWriter.newLine();
 			isWrite = true;
 		} catch (Exception e) {
 		}
@@ -165,8 +159,8 @@ public class DataAccessObject {
 	}
 	public boolean insComment(String data) {
 		try {
-			bWriter.write(data);
-			bWriter.newLine();
+			this.bWriter.write(data);
+			this.bWriter.newLine();
 			return true;
 		} catch (Exception e) {
 		}
@@ -180,8 +174,8 @@ public class DataAccessObject {
 			sb.append((i < exData.length - 1) ? "," : "");
 		}
 		try {
-			bWriter.write(sb.toString());
-			bWriter.newLine();
+			this.bWriter.write(sb.toString());
+			this.bWriter.newLine();
 			isWrite = true;
 		} catch (Exception e) {
 		}
@@ -191,56 +185,51 @@ public class DataAccessObject {
 	public boolean fileConnected(boolean readOrWrite, String fileName, boolean append) {
 		boolean result;
 		String ap = new File("").getAbsolutePath();
-		file = new File(ap + fileName);
+		this.file = new File(ap + fileName);
 		try {
 			if (readOrWrite) {
-				bReader = new BufferedReader(new FileReader(file));
+				this.bReader = new BufferedReader(new FileReader(this.file));
 			} else {
 				if (append) {
-					writer = new FileWriter(file, true); // 파일 내용 추가
+					this.writer = new FileWriter(this.file, true); // 파일 내용 추가
 				} else {
-					writer = new FileWriter(file); // 파일 내용 덮어쓰기
+					this.writer = new FileWriter(this.file); // 파일 내용 덮어쓰기
 				}
-				bWriter = new BufferedWriter(writer);
+				this.bWriter = new BufferedWriter(this.writer);
 			}
+			result = true;
 		} catch (Exception e) {
-			e.printStackTrace();
 			result = false;
 		}
-		result = true;
 		return result;
 	}
 
 	public void fileClose(boolean readOrWrite) {
 		if (readOrWrite) {
 			try {
-				if (bReader != null) {
-					bReader.close();
+				if (this.bReader != null) {
+					this.bReader.close();
 				}
 			} catch (Exception e2) {
-				e2.printStackTrace();
 			}
 			try {
-				if (reader != null) {
-					reader.close();
+				if (this.reader != null) {
+					this.reader.close();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
 			}
 		} else {
 			try {
-				if (bWriter != null) {
-					bWriter.close();
+				if (this.bWriter != null) {
+					this.bWriter.close();
 				}
 			} catch (Exception e2) {
-				e2.printStackTrace();
 			}
 			try {
-				if (writer != null) {
-					writer.close();
+				if (this.writer != null) {
+					this.writer.close();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
 			}
 		}
 	}

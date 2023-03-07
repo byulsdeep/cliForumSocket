@@ -21,64 +21,65 @@ public class FrontEnd {
 	Socket socket;
 	BufferedReader inputReader;
 	PrintWriter requestSender;
-	// BufferedReader responseReader;
 	DataInputStream responseReader;
 	ProjectUtils pu;
 	String userInfo = null;
 	List<PostBean> posts = null;
 
 	public FrontEnd() {
-		connectToServer();
-		pu = new ProjectUtils();
-		main();
+		this.connectToServer();
+		this.pu = new ProjectUtils();
+		this.main();
 	}
 	public void connectToServer() {
-		try {
-			inputReader = new BufferedReader(new InputStreamReader(System.in));
-			System.out.println("서버 주소 입력 (192.168.0.122): "); 
-			socket = new Socket(inputReader.readLine(), 9999);
-			System.out.println("Connected to Server.");
-
-			
-			requestSender = new PrintWriter(socket.getOutputStream(), true);
-			// responseReader = new BufferedReader(new
-			// InputStreamReader(socket.getInputStream()));
-			responseReader = new DataInputStream(socket.getInputStream());
-
-		} catch (IOException e) {
-			e.printStackTrace();
+		while (true) {
+			try {
+				this.inputReader = new BufferedReader(new InputStreamReader(System.in));
+				System.out.println("서버 주소를 입력해주세요 (192.168.0.122): ");
+				String host = this.getInput();
+				System.out.println("포트번호를 입력해주세요 (2400): ");
+				int port = Integer.parseInt(this.getInput());
+				this.socket = new Socket(host, port);
+				System.out.println("서버에 연결되었습니다.");
+				this.requestSender = new PrintWriter(socket.getOutputStream(), true);
+				this.responseReader = new DataInputStream(socket.getInputStream());
+				break;
+			} catch (IOException e) {
+				System.out.println("서버연결에 실패하였습니다.\n" + "호스트의 IP주소를 확인해주세요.\n" + "계속 하려면 Enter키를 눌러주세요.");
+				this.getInput();
+				continue;
+			}
 		}
 	}
 	void main() {
 		String[] options = { "게시판  ", "로그인  ", "회원가입 " };
 		String[] options2 = { "게시판  ", "로그아웃  ", "마이페이지" };
 		String select;
-		try {
-			while (true) {
-				System.out.println(pu.getTitle());
-
-				if (userInfo != null) {
-					System.out.println(pu.getMenu(options2, true));
+		while (true) {
+			try {
+				System.out.println(this.pu.getTitle());
+				if (this.userInfo != null) {
+					System.out.println(this.pu.getMenu(options2, true));
 				} else {
-					System.out.println(pu.getMenu(options, true));
+					System.out.println(this.pu.getMenu(options, true));
 				}
-				select = inputReader.readLine();
+				select = this.inputReader.readLine();
 				switch (select) {
 				case "1":
-					moveForum();
+					this.moveForum();
 					break;
 				case "2":
-					if (userInfo == null) {
-						moveLogIn();
+					if (this.userInfo == null) {
+						this.moveLogIn();
 					} else {
-						moveLogOut();
+						this.moveLogOut();
 					}
 					break;
 				case "3":
-					if (userInfo == null) {
-						moveSignUp();
+					if (this.userInfo == null) {
+						this.moveSignUp();
 					} else {
-						moveMyPage();
+						this.moveMyPage();
 					}
 					break;
 				case "0":
@@ -86,10 +87,10 @@ public class FrontEnd {
 					System.exit(0);
 					break;
 				}
+			} catch (Exception e) {
+				System.out.println("システムエラー");
+				continue;
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Error: " + e.getMessage());
 		}
 	}
 	private void moveMyPage() {
@@ -98,10 +99,10 @@ public class FrontEnd {
 		String select;
 		boolean run = true;
 		while (run) {
-			System.out.println("내 아이디: " + ((userInfo != null) ? userInfo : "로그인 후 이용해주세요."));
+			System.out.println("내 아이디: " + ((this.userInfo != null) ? this.userInfo : "로그인 후 이용해주세요."));
 			System.out.println("==================================");
-			System.out.println(pu.getMenu(options, true));
-			select = getInput();
+			System.out.println(this.pu.getMenu(options, true));
+			select = this.getInput();
 			switch (select) {
 			case "1":
 				run = false;
@@ -115,16 +116,16 @@ public class FrontEnd {
 	}
 	private void moveLogOut() {
 		System.out.println("1. 로그아웃 확인	2. 취소");
-		String select = getInput();
+		String select = this.getInput();
 		if (select.equals("1")) {
 			userInfo = null;
 			System.out.println("로그아웃되었습니다.");
 			System.out.println("1. 확인");
-			getInput();
+			this.getInput();
 		}
 	}
 	private void moveSignUp() {
-		System.out.println(pu.getTitle("회원가입", true));
+		System.out.println(this.pu.getTitle("회원가입", true));
 		String[] names = { "id", "pw", "birthday", "recoveryQ", "recoveryA" };
 		String[] data = new String[5];
 		String clientData;
@@ -132,38 +133,35 @@ public class FrontEnd {
 		boolean isExit = false;
 		while (!isExit) {
 			System.out.println("아이디: ");
-			data[0] = getInput();
-			if (isExit = pu.exitCheck(data[0]))
+			data[0] = this.getInput();
+			if (isExit = this.pu.exitCheck(data[0]))
 				break;
-			if (pu.containsComma(data[0]))
+			if (this.pu.containsComma(data[0]))
 				continue;
-//			if (pu.isEmpty(data[0]))
-//				continue;
-			// 파일 쓰기 기능 완성하면 중복체크 기능 추가
-			clientData = pu.makeTransferData("isIdUsed", names[0], data[0]);
-			sendRequest(clientData);
-			serverData = getResponse();
+			clientData = this.pu.makeTransferData("isIdUsed", names[0], data[0]);
+			this.sendRequest(clientData);
+			serverData = this.getResponse();
 			if (serverData.equals("false")) {
 				System.out.println("사용 가능한 아이디입니다.");
-				pu.confirm();
+				this.pu.confirm();
 				break;
 			} else {
 				System.out.println("이미 사용중인 아이디입니다.");
 			}
 		}
 
-		isExit = pu.confirmInput(isExit, inputReader);
+		isExit = this.pu.confirmInput(isExit, this.inputReader);
 
 		while (!isExit) {
 			System.out.println("비밀번호: ");
-			data[1] = getInput();
-			if (isExit = pu.exitCheck(data[1]))
+			data[1] = this.getInput();
+			if (isExit = this.pu.exitCheck(data[1]))
 				break;
-			if (pu.containsComma(data[1]))
+			if (this.pu.containsComma(data[1]))
 				continue;
 			System.out.println("비밀번호 확인: ");
-			String confirm = getInput();
-			if (isExit = pu.exitCheck(confirm))
+			String confirm = this.getInput();
+			if (isExit = this.pu.exitCheck(confirm))
 				break;
 			if (data[1].equals(confirm)) {
 				break;
@@ -174,12 +172,12 @@ public class FrontEnd {
 
 		while (!isExit) {
 			System.out.println("생년월일(19910101):  ");
-			data[2] = getInput();
-			if (isExit = pu.exitCheck(data[2]))
+			data[2] = this.getInput();
+			if (isExit = this.pu.exitCheck(data[2]))
 				break;
-			if (pu.containsComma(data[2]))
+			if (this.pu.containsComma(data[2]))
 				continue;
-			if (!pu.isNum(data[2])) {
+			if (!this.pu.isNum(data[2])) {
 				System.out.println("숫자를 입력해주세요.");
 				continue;
 			}
@@ -197,13 +195,13 @@ public class FrontEnd {
 		String[] recoveryQ = { "내가 다닌 초등학교는?", "내 이모의 이름은?", "내가 가장 아끼던 장난감은?", "내가 가장 좋아하는 노래는?" };
 		if (!isExit) {
 			System.out.println("계정 복구용 질문을 선택해주세요: ");
-			System.out.println(pu.getMenu(recoveryQ, false));
+			System.out.println(this.pu.getMenu(recoveryQ, false));
 		}
 		int recoveryQIdx = -1;
 		while (!isExit) {
 			try {
-				recoveryQIdx = Integer.parseInt(getInput());
-				if (isExit = pu.exitCheck(recoveryQIdx))
+				recoveryQIdx = Integer.parseInt(this.getInput());
+				if (isExit = this.pu.exitCheck(recoveryQIdx))
 					break;
 				if (recoveryQIdx < 1 || recoveryQIdx > 4)
 					continue;
@@ -218,13 +216,13 @@ public class FrontEnd {
 		}
 
 		while (!isExit) {
-			data[4] = getInput();
-			if (pu.containsComma(data[4]))
+			data[4] = this.getInput();
+			if (this.pu.containsComma(data[4]))
 				continue;
 			break;
 		}
 
-		if (!(isExit = pu.exitCheck(data[4]))) {
+		if (!(isExit = this.pu.exitCheck(data[4]))) {
 			StringBuffer sb = new StringBuffer();
 			sb.append("아이디: " + data[0] + "\n");
 			sb.append("비밀번호: ");
@@ -238,15 +236,15 @@ public class FrontEnd {
 			sb.append("정보를 확인해주세요.\n");
 			sb.append("전송 하기");
 			System.out.println(sb);
-			pu.confirm();
+			this.pu.confirm();
 		}
 
-		if (!(isExit = pu.confirmInput(isExit, inputReader))) {
-			clientData = pu.makeTransferData("signUp", names, data);
-			sendRequest(clientData);
-			serverData = getResponse();
+		if (!(isExit = this.pu.confirmInput(isExit, this.inputReader))) {
+			clientData = this.pu.makeTransferData("signUp", names, data);
+			this.sendRequest(clientData);
+			serverData = this.getResponse();
 			if (serverData.equals("true")) {
-				System.out.println(pu.getTitle("가입 성공", false));
+				System.out.println(this.pu.getTitle("가입 성공", false));
 				System.out.println("환영합니다, " + data[0] + "님!");
 				System.out.println("지금 로그인하시고 새 글을 작성해보세요!");
 			}
@@ -259,24 +257,25 @@ public class FrontEnd {
 		String serverData = null;
 		boolean isExit = false;
 
-		System.out.println(pu.getTitle("로그인", true));
+		System.out.println(this.pu.getTitle("로그인", true));
 		while (!isExit) {
 			System.out.println("아이디 : ");
-			data[0] = getInput();
-			if (isExit = pu.exitCheck(data[0]))
+			data[0] = this.getInput();
+			if (isExit = this.pu.exitCheck(data[0]))
 				break;
 			System.out.println("비밀번호: ");
-			data[1] = getInput();
-			pu.confirm();
-			if (!(isExit = pu.confirmInput(isExit, inputReader))) {
-				clientData = pu.makeTransferData("logIn", names, data);
-				System.out.println(clientData);
-				sendRequest(clientData);
-				serverData = getResponse();
-				if (serverData != null) {
-					userInfo = serverData;
-					System.out.println(pu.getTitle());
-					System.out.println(pu.getAccessInfo(serverData));
+			data[1] = this.getInput();
+			if (isExit = this.pu.exitCheck(data[1]))
+				break;
+			this.pu.confirm();
+			if (!(isExit = this.pu.confirmInput(isExit, this.inputReader))) {
+				clientData = this.pu.makeTransferData("logIn", names, data);
+				this.sendRequest(clientData);
+				serverData = this.getResponse();
+				if (!serverData.equals("false")) {
+					this.userInfo = serverData;
+					System.out.println(this.pu.getTitle());
+					System.out.println(this.pu.getAccessInfo(serverData));
 					break;
 				} else {
 					System.out.println("인증 정보가 잘못되었습니다.");
@@ -285,40 +284,42 @@ public class FrontEnd {
 		}
 	}
 	private void moveForum() {
-		// new Controller().entrance("moveForum", pu, sc);
-		// new Controller().entrance("moveForum?id=" + userInfo, pu, sc);
-		String[] options = { "글쓰기  ", "마이페이지  ", "홈페이지 " };
-		String[] options2 = { "홈페이지 " };
-		String[] options3 = { "댓글달기 ", "글삭제    ", "돌아가기 " };
-		String[] options4 = { "돌아가기 " };
+		// 로그인 게시판
+		String[] options = { "글쓰기  ", "새로고침  ", "홈페이지 " };
+		// 로그아웃 게시판
+		String[] options2 = { "홈페이지 ", "새로고침  " };
+		// 로그인 게시글
+		String[] options3 = { "댓글달기 ", "새로고침  ", "글삭제    ", "돌아가기 " };
+		// 로그아웃 게시글
+		String[] options4 = { "새로고침  ", "돌아가기 " };
 		boolean showAccess = true;
 
-		System.out.println(pu.getTitle("게시판", false));
+		System.out.println(this.pu.getTitle("게시판", false));
 		String select;
 		boolean run = true;
-		
+
 		while (run) {
-			getPosts();
+			this.getPosts();
 			System.out.println(getList());
-			if (userInfo != null) {
-				System.out.println(pu.getMenu(options, true));
+			if (this.userInfo != null) {
+				System.out.println(this.pu.getMenu(options, true));
 			} else {
-				System.out.println(pu.getMenu(options2, true));
+				System.out.println(this.pu.getMenu(options2, true));
 			}
-			select = getInput();
+			select = this.getInput();
 			switch (select) {
 			case "1":
-				if (userInfo != null) {
-					addPost(showAccess);
+				if (this.userInfo != null) {
+					this.addPost(showAccess);
 				} else {
 					run = false;
 				}
 				break;
 			case "2":
-				moveMyPage();
+				// 새로고침
 				break;
 			case "3":
-				if (userInfo != null)
+				if (this.userInfo != null)
 					run = false;
 				break;
 			case "0":
@@ -327,9 +328,8 @@ public class FrontEnd {
 				break;
 			default:
 				try {
-					int i = Integer.parseInt(select);
-					//if (i > posts.size())
-					showPostDetail(select, options3, options4);
+					Integer.parseInt(select);
+					this.showPostDetail(select, options3, options4);
 				} catch (Exception e) {
 					break;
 				}
@@ -342,20 +342,17 @@ public class FrontEnd {
 			getPosts();
 			PostBean po = null;
 			try {
-				for (PostBean p : posts) {
+				for (PostBean p : this.posts) {
 					if (p.getIndex() == Integer.parseInt(idx)) {
 						po = p;
 						break;
 					}
 				}
-				
-				
-				
-				
+
 			} catch (Exception e) {
 				System.out.println("오류");
 				System.out.println("1. 확인");
-				getInput();
+				this.getInput();
 				return;
 			}
 
@@ -370,43 +367,51 @@ public class FrontEnd {
 				sb.append(c.getCommentIdx() + " | ");
 				sb.append(c.getUser() + " : ");
 				sb.append(c.getContent() + "\n                            ");
-				sb.append((pu.getDate().equals(c.getDate()) ? c.getTime() : c.getDate().substring(5, 10)) + "\n");
+				sb.append((this.pu.getDate().equals(c.getDate()) ? c.getTime() : c.getDate().substring(5, 10)) + "\n");
 				sb.append(
 						po.getComments().get(po.getComments().size() - 1) != c ? "----------------------------------\n"
 								: "==================================");
 			}
 			System.out.println(sb.toString());
 			String select;
-
 			sb.setLength(0);
-			sb.append(pu.getMenu((userInfo != null) ? options3 : options4, true));
+			sb.append(pu.getMenu((this.userInfo != null) ? options3 : options4, true));
 			sb.append("\n==================================");
 			System.out.println(sb);
-			select = getInput();
-			// String[] options3 = { "댓글달기 ", "글삭제 ", "돌아가기 " };
+			select = this.getInput();
 			switch (select) {
 			case "1":
-				if (userInfo != null) {
-					addComment(po.getIndex());
-				} else {
-					run = false;
-				}	
+				// 댓글 : 새로고침
+				if (this.userInfo != null) {
+					this.addComment(po.getIndex());
+				}
 				break;
 			case "2":
-				if (userInfo != null) {
-					if (!userInfo.equals(po.getUser())) {
+				// 새로고침 : 돌아가기
+				if (this.userInfo == null) {
+					run = false;
+				}
+				break;
+			case "3":
+				// 글삭 : 아무것도
+				if (this.userInfo != null) {
+					if (!this.userInfo.equals(po.getUser())) {
 						System.out.println("권한이 없습니다.");
 						System.out.println("1. 확인");
-						getInput();
+						this.getInput();
 					} else {
 						deletePost(po.getIndex());
 					}
 				}
-			case "3":
-				if (userInfo != null)
+				break;
+			case "4":
+				if (this.userInfo != null) {
 					run = false;
+				}
+				// 돌아가기 :아무것도
 				break;
 			case "0":
+				// 종료
 				System.out.println("종료");
 				System.exit(0);
 				break;
@@ -421,24 +426,24 @@ public class FrontEnd {
 
 		data[0] = String.valueOf(idx);
 
-		sendRequest("getNextCommentIdx?postIdx=" + idx);
-		serverData = getResponse();
+		this.sendRequest("getNextCommentIdx?postIdx=" + idx);
+		serverData = this.getResponse();
 		data[1] = serverData;
 
-		data[2] = userInfo;
+		data[2] = this.userInfo;
 
 		System.out.print("댓글: ");
-		data[3] = getInput();
+		data[3] = this.getInput();
 
-		pu.confirm();
+		this.pu.confirm();
 		boolean isExit = false;
-		if (!(isExit = pu.confirmInput(isExit, inputReader))) {
-			data[4] = pu.getDate();
-			data[5] = pu.getTime();
+		if (!(isExit = this.pu.confirmInput(isExit, this.inputReader))) {
+			data[4] = this.pu.getDate();
+			data[5] = this.pu.getTime();
 
-			clientData = pu.makeTransferData("addComment", names, data);
-			sendRequest(clientData);
-			serverData = getResponse();
+			clientData = this.pu.makeTransferData("addComment", names, data);
+			this.sendRequest(clientData);
+			serverData = this.getResponse();
 			if (serverData.equals("true")) {
 				System.out.println("댓글이 추가되었습니다.");
 			} else {
@@ -449,25 +454,25 @@ public class FrontEnd {
 	void deletePost(int idx) {
 		String serverData = null;
 		System.out.println("정말 삭제하시겠습니까?");
-		pu.confirm();
+		this.pu.confirm();
 		boolean isExit = false;
-		if (!(isExit = pu.confirmInput(isExit, inputReader))) {
-			sendRequest("deletePost?postIdx=" + idx);
-			serverData = getResponse();
-		}
-		System.out.println(serverData != null ? "게시글이 삭제되었습니다." : "오류");
-		System.out.println("1. 확인");
-		getInput();
+		if (!(isExit = this.pu.confirmInput(isExit, this.inputReader))) {
+			this.sendRequest("deletePost?postIdx=" + idx);
+			serverData = this.getResponse();
+			System.out.println(serverData != "false" ? "게시글이 삭제되었습니다." : "오류");
+			System.out.println("1. 확인");
+			this.getInput();
+		}		
 	}
 	void getPosts() {
 		String serverDataPosts = null;
 		String serverDataComments = null;
-		sendRequest("getPosts");
-		serverDataPosts = getResponse();
+		this.sendRequest("getPosts");
+		serverDataPosts = this.getResponse();
 
 		StringTokenizer st;
 		StringTokenizer st2;
-		posts = new ArrayList<>();
+		this.posts = new ArrayList<>();
 		PostBean p;
 		CommentBean c;
 		List<CommentBean> comments;
@@ -484,8 +489,8 @@ public class FrontEnd {
 			p.setTime(st.nextToken());
 
 			comments = new LinkedList<>();
-			sendRequest("getComments?postIdx=" + p.getIndex());
-			serverDataComments = getResponse();
+			this.sendRequest("getComments?postIdx=" + p.getIndex());
+			serverDataComments = this.getResponse();
 			st2 = new StringTokenizer(serverDataComments, "|\n");
 
 			while (st2.hasMoreTokens()) {
@@ -499,7 +504,7 @@ public class FrontEnd {
 				comments.add(c);
 			}
 			p.setComments(comments);
-			posts.add(p);
+			this.posts.add(p);
 		}
 	}
 	String getList() {
@@ -507,14 +512,14 @@ public class FrontEnd {
 		// 0. 1. 번은 홈페이지, 종료 기능이므로 2번 부터 게시글 선택
 		// 2. 아름다운 구속 댓글수
 		// 틀니 | 13:15/2023.03.02 | 조회 99 | 추천 99
-		for (int i = 0; i < posts.size(); i++) {
-			sb.append(posts.get(i).getIndex() + ". ");
-			sb.append(posts.get(i).getTitle() + "\n");
-			sb.append(posts.get(i).getUser() + "\t");
-			sb.append((pu.getDate().equals(posts.get(i).getDate()) ? posts.get(i).getTime()
-					: posts.get(i).getDate().substring(5, 10)));
+		for (int i = 0; i < this.posts.size(); i++) {
+			sb.append(this.posts.get(i).getIndex() + ". ");
+			sb.append(this.posts.get(i).getTitle() + "\n");
+			sb.append(this.posts.get(i).getUser() + "\t");
+			sb.append((this.pu.getDate().equals(this.posts.get(i).getDate()) ? this.posts.get(i).getTime()
+					: this.posts.get(i).getDate().substring(5, 10)));
 			// sb.append("조회 "); 조회수, 추천수, 댓글수는 여유되면 추가
-			sb.append((i < posts.size() - 1) ? "\n----------------------------------\n"
+			sb.append((i < this.posts.size() - 1) ? "\n----------------------------------\n"
 					: "\n==================================");
 		}
 		return sb.toString();
@@ -527,26 +532,32 @@ public class FrontEnd {
 		String[] data = new String[6];
 
 		// 최신글 번호 불러오는 코드 추가
-		sendRequest("getNextPostIdx");
-		serverData = getResponse();
+		this.sendRequest("getNextPostIdx");
+		serverData = this.getResponse();
 		data[0] = serverData;
 
-		data[1] = userInfo;
+		data[1] = this.userInfo;
 		data[2] = "";
 		System.out.print("제목 : ");
-		data[2] = getInput();
-		System.out.println("내용 (1. 입력 종료): ");
-		data[3] = pu.nextPara(inputReader);
-
-		pu.confirm();
+		data[2] = this.getInput();
+		System.out.print("내용 (1. 입력 종료): ");
+		while (true) {
+			data[3] = this.pu.nextPara(inputReader);
+			if (data[3].length() < 1) {
+				System.out.println("내용을 입력해주세요.");
+				continue;
+			}
+			break;
+		}	
+		this.pu.confirm();
 		boolean isExit = false;
 
-		if (!(isExit = pu.confirmInput(isExit, inputReader))) {
-			data[4] = pu.getDate();
-			data[5] = pu.getTime();
-			clientData = pu.makeTransferData("addPost", names, data);
-			sendRequest(clientData);
-			serverData = getResponse();
+		if (!(isExit = this.pu.confirmInput(isExit, this.inputReader))) {
+			data[4] = this.pu.getDate();
+			data[5] = this.pu.getTime();
+			clientData = this.pu.makeTransferData("addPost", names, data);
+			this.sendRequest(clientData);
+			serverData = this.getResponse();
 			if (serverData.equals("true")) {
 				System.out.println("글이 정상적으로 등록되었습니다.");
 				System.out.println("==================================");
@@ -556,7 +567,7 @@ public class FrontEnd {
 	}
 	String getInput() {
 		try {
-			return inputReader.readLine();
+			return this.inputReader.readLine();
 		} catch (Exception e) {
 			System.out.println("getInput");
 			System.out.println(e.getMessage());
@@ -564,13 +575,13 @@ public class FrontEnd {
 		}
 	}
 	void sendRequest(String clientData) {
-		requestSender.println(clientData);
+		this.requestSender.println(clientData);
 		// print won't work, flush doesn't help
 	}
 	String getResponse() {
 		try {
 			// return responseReader.readLine();
-			return responseReader.readUTF();
+			return this.responseReader.readUTF();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			return e.getMessage();

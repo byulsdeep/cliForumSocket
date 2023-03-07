@@ -27,8 +27,6 @@ public class ProjectUtils {
 			}
 		} catch (Exception e) {
 		}
-//		if (sb.length() > 8)
-//		sb.delete(sb.length() - 9, sb.length());
 		return sb.toString();
 	}
 	public String getJobCode(String data) {
@@ -56,7 +54,6 @@ public class ProjectUtils {
 		String[] options = { "확인", "취소" };
 		System.out.println(getMenu(options, false));
 	}
-
 	public boolean confirmInput(boolean isExit, BufferedReader reader) {
 		String select;
 		while (!isExit) {
@@ -75,7 +72,6 @@ public class ProjectUtils {
 		}
 		return isExit;
 	}
-
 	public boolean containsComma(String s) {
 		if (s.contains(",")) {
 			System.out.println(s + "는(은) 금지어입니다.");
@@ -93,7 +89,6 @@ public class ProjectUtils {
 	}
 	public String getMenu(String[] options, boolean exitButton) {
 		StringBuffer sb = new StringBuffer();
-
 		for (int i = 0; i < options.length; i++) {
 			sb.append(i + 1 + ". " + options[i]);
 			sb.append((i % 2 == 0 && options[i].length() < 10) ? "\t" : "\n");
@@ -106,12 +101,10 @@ public class ProjectUtils {
 		sb.append("==================================\r\n" + "\r\n" + "　　　                     " + title + "\r\n"
 				+ "                          " + ((cancelButton) ? "0. 나가기" : "") + "\r\n"
 				+ "==================================");
-
 		return sb.toString();
 	}
 	public String getTitle() {
 		StringBuffer sb = new StringBuffer();
-
 		sb.append("==================================\r\n" + "\r\n" + "　　　            CLI Forum v1.0\r\n" + "\r\n"
 				+ "　　　　            designed by\r\n" + "\r\n" + "+-++-++-++-++-++-++-++-++-++-++-+\r\n"
 				+ "|B||y||u||l||s||D||e||e||p||★||彡|\r\n" + "+-++-++-++-++-++-++-++-++-++-++-+\r\n"

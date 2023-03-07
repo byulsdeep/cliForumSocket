@@ -5,13 +5,11 @@ import rules.ServiceRules;
 import utilities.ProjectUtils;
 
 public class Authentication implements ServiceRules {
-	
 	public String backController(String clientData, ProjectUtils pu) {
-		String message = "오류";
+		String message = "server error";
 		String jobCode;
 		if (clientData != null) {
-			jobCode = pu.getJobCode(clientData);
-			
+			jobCode = pu.getJobCode(clientData);		
 			switch (jobCode) {
 			case "isIdUsed":
 				message = isIdUsed(clientData, pu);
@@ -26,7 +24,7 @@ public class Authentication implements ServiceRules {
 		return message;
 	}
 	private String logIn(String clientData, ProjectUtils pu) {
-		String message = null;
+		String message = "wrong password";
 		String[][] exData = pu.extractData(clientData);
 		DataAccessObject dao = new DataAccessObject();
 		if (dao.fileConnected(true, "/src/database/users.txt", false)) {
@@ -52,15 +50,13 @@ public class Authentication implements ServiceRules {
 		dao.fileClose(true);
 		return message;
 	}
-	
 	private String signUp(String clientData, ProjectUtils pu) {
 		//signUp?id=byulsdeep&pw=****&birthday=19940602&recoveryQ=1&recoveryA=yanghwa
-		String message = null;
+		String message = "false";
 		String[][] exData = pu.extractData(clientData);
-		//AuthBean ab = new AuthBean(exData[0][1], exData[1][1], exData[2][1], exData[3][1], exData[4][1]);
 		DataAccessObject dao = new DataAccessObject();
 		if (dao.fileConnected(false, "/src/database/users.txt", true)) {
-			message = dao.insUser(exData) ? "true" : null;
+			message = dao.insUser(exData) ? "true" : "false";
 		}
 		dao.fileClose(false);
 		return message;
